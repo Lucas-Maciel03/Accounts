@@ -70,7 +70,7 @@ function createAccountPassword(accountName){
     ]).then((answer) => {
         const password = answer['password']
 
-        if(!checkPassword(password)){
+        if(!checkCreatePassword(password)){
             return createAccountPassword(accountName)
         }
 
@@ -85,7 +85,8 @@ function createAccountPassword(accountName){
     }).catch(err => err)
 }
 
-function checkPassword(password){
+function checkCreatePassword(password){
+   
     if(!password){
         console.log(chalk.bgRed('Senha não esta no padrão necessario!'))
         return false
@@ -95,5 +96,83 @@ function checkPassword(password){
         console.log(chalk.bgRed('A senha precisa ter 6 digitos!'))
         return false
     }
+    
     return true
+}
+
+function checkPassword(password, accountName){
+    const accountData = getAccount(accountName)
+
+    if(accountData.password != password){
+        console.log('xxx')
+        return false
+    }
+
+    return true
+}
+
+function deposit(){
+    inquirer.prompt([
+        {
+            name: 'accountName',
+            message: 'Qual o nome da sua conta?'
+        }
+    ]).then((answer) =>{
+        const accountName = answer['accountName']
+        
+        //checar se o nome da conta existe
+        if(!checkAccount(accountName)){
+            return deposit()
+        }
+
+        inquirer.prompt([
+            {
+                name: "password",
+                message: "Digite sua senha:"
+            }
+        ]).then((answer) => {
+            const password = answer['password']
+
+            if(!checkPassword(password, accountName)){
+                return deposit()
+            }
+
+            inquirer.prompt([
+                {
+                    name: 'amount',
+                    message: 'Qual o valor de deposito?'
+                }
+            ]).then((answer) =>{
+                const amount = answer['amount']
+    
+                //add an amount
+                addAmmount(accountName, amount)
+                
+    
+            }).catch(err => console.log(err))
+
+        }).catch(err => err)
+
+    }).catch(err => console.log(err))
+}
+
+function checkAccount(accountName){
+    if(!fs.existsSync(`accounts/${accountName}.json`)){
+        console.log(chalk.bgRed.black('Nome da conta não existe, tente novamente'))
+        return false
+    }
+    return true
+}
+
+function addAmmount(accountName, amount){
+
+}
+
+function getAccount(accountName){
+    const accountJSON = fs.readFileSync(`accounts/${accountName}.json`, {
+    encoding: 'utf8',
+    flag: 'r'
+    })
+
+    return JSON.parse(accountJSON)
 }
