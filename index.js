@@ -75,13 +75,13 @@ function createAccountPassword(accountName){
         }
 
         fs.writeFileSync(`accounts/${accountName}.json`,
-        `{"balance":"0", "password":${password}`,
+        `{"balance":"0", "password":${password}}`,
         function (err){
             console.log(err)
         })
 
         console.log(chalk.green('Parabéns, sua conta foi criada com sucesso'))
-
+        operation()
     }).catch(err => err)
 }
 
@@ -104,7 +104,7 @@ function checkPassword(password, accountName){
     const accountData = getAccount(accountName)
 
     if(accountData.password != password){
-        console.log('xxx')
+        console.log(chalk.bgRed('Senha da conta está incorreta!'))
         return false
     }
 
@@ -148,7 +148,6 @@ function deposit(){
                 //add an amount
                 addAmmount(accountName, amount)
                 
-    
             }).catch(err => console.log(err))
 
         }).catch(err => err)
@@ -165,7 +164,22 @@ function checkAccount(accountName){
 }
 
 function addAmmount(accountName, amount){
+    const accountData = getAccount(accountName)
 
+    if(!amount || amount < 0){
+        console.log(chalk.bgRed('Ocorreu um erro tente novamente mais tarde'))
+        return deposit()
+    }
+
+    accountData.balance = parseFloat(accountData.balance) + parseFloat(amount)
+
+    fs.writeFileSync(`accounts/${accountName}.json`,
+    JSON.stringify(accountData),
+    function(err){console.log(err)}
+    )
+
+    console.log(chalk.green(`Foi depositado o valor de R$${amount} na sua conta!`))
+    operation()
 }
 
 function getAccount(accountName){
