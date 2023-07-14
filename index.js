@@ -132,7 +132,8 @@ function deposit(){
             }
         ]).then((answer) => {
             const password = answer['password']
-
+            
+            //checar se a senha está correta
             if(!checkPassword(password, accountName)){
                 return deposit()
             }
@@ -189,4 +190,39 @@ function getAccount(accountName){
     })
 
     return JSON.parse(accountJSON)
+}
+
+function getAcountBalance(){
+    inquirer.prompt([
+        {
+            name: "accountName",
+            message: "Qual o nome da sua conta?"
+        }
+    ]).then((answer) =>{
+        const accountName = answer['accountName']
+
+        if(!checkAccount(accountName)){
+            return getAcountBalance()
+        }
+
+        inquirer.prompt([
+            {
+                name: "password",
+                message: "Digite a senha da sua conta:"
+            }
+        ]).then((answer) => {
+            const password = answer['password']
+
+            if(!checkPassword(password, accountName)){
+                return getAcountBalance()
+            }
+
+            const accountData = getAccount(accountName)
+
+            console.log(chalk.bgBlue.black(`Seu saldo é de R$${accountData.balance}`))
+
+            operation()
+        }).catch(err => err)
+
+    }).catch(err => err)
 }
