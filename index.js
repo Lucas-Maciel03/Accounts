@@ -226,3 +226,69 @@ function getAcountBalance(){
 
     }).catch(err => err)
 }
+
+function withDraw(){
+    inquirer.prompt([
+        {
+            name: 'accountName',
+            message: 'Qual o nome da sua conta?'
+        }
+    ]).then((answer) => {
+        const accountName = answer['accountName']
+
+        if(!checkAccount(accountName)){
+            return withDraw()
+        }
+
+        inquirer.prompt([
+            {
+                name: 'password',
+                message: 'Digite sua senha:'
+            }
+        ]).then((answer) => {
+            const password = answer['password']
+
+            if(!checkPassword(password, accountName)){
+                return withDraw()
+            }
+
+            inquirer.prompt([
+                {
+                    name: 'amount',
+                    message: 'Qual o valor de saque?'
+                }
+            ]).then((answer) => {
+                const amount = answer['amount']
+
+                removeAmount(accountName, amount)
+
+            }).catch(err => err)
+
+        }).catch(err => err)
+
+    }).catch(err => err)
+}
+
+function removeAmount(accountName, amount){
+    const accountData = getAccount(accountName)
+
+    if(accountData.balance < amount){
+        console.log(chalk.bgRed('Você não tem saldo para realizar esse saque!'))
+        return withDraw()
+    }
+    
+    if(!amount){
+        console.log(chalk.bgRed('O valor para saque é invalido, tente novamente mais tarde!'))
+        return withDraw()
+    }
+
+    accountData.balance = parseFloat(accountData.balance) - parseFloat(amount)
+
+    fs.writeFileSync(`accounts/${accountName}.json`,
+    JSON.stringify(accountData),
+    function(err){console.log(err)}
+    )
+
+    console.log(chalk.green(`Foi realizado um saque de R$${amount} na sua conta!`))
+    operation()
+}
